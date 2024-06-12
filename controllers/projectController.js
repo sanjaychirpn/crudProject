@@ -62,10 +62,40 @@ exports.deleteProject = async (req, res) => {
     }
 };
 
+// Add these methods to your projectController
+
+exports.getAssignedProjectsByUser = async (req, res) => {
+    try {
+        const assignments = await ProjectAssignment.find({ userid: req.params.userid }).populate('projectid');
+        if (assignments.length === 0) return sendResponse(res, 404, 'No assignments found for this user');
+        sendResponse(res, 200, 'Assignments retrieved successfully', assignments);
+    } catch (err) {
+        console.error(err.message);
+        sendResponse(res, 500, 'Server error');
+    }
+};
+
+exports.unassignProject = async (req, res) => {
+    const { projectid, userid } = req.body;
+
+    try {
+        const assignment = await ProjectAssignment.findOneAndDelete({ projectid, userid });
+        if (!assignment) return sendResponse(res, 404, 'Assignment not found');
+        sendResponse(res, 200, 'Project unassigned successfully');
+    } catch (err) {
+        console.error(err.message);
+        sendResponse(res, 500, 'Server error');
+    }
+};
+
 exports.assignProject = async (req, res) => {
     const { projectid, userid, assigndate, duration, status } = req.body;
 
     try {
+        // Check if the project is already assigned
+        const existingAssignment = await ProjectAssignment.findOne({ projectid });
+        if (existingAssignment) return sendResponse(res, 400, 'Project is already assigned to a user');
+
         const newAssignment = new ProjectAssignment({ projectid, userid, assigndate, duration, status });
         const assignment = await newAssignment.save();
         sendResponse(res, 201, 'Project assigned successfully', assignment);
