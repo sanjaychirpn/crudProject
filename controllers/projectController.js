@@ -92,9 +92,16 @@ exports.assignProject = async (req, res) => {
     const { projectid, userid, assigndate, duration, status } = req.body;
 
     try {
-        // Check if the project is already assigned
+        // Check if the project is already assigned to any user
         const existingAssignment = await ProjectAssignment.findOne({ projectid });
-        if (existingAssignment) return sendResponse(res, 400, 'Project is already assigned to a user');
+        if (existingAssignment) {
+            // Check if the project is already assigned to the same user
+            if (existingAssignment.userid.toString() === userid) {
+                return sendResponse(res, 400, 'Project is already assigned to this user');
+            } else {
+                return sendResponse(res, 400, 'Project is already assigned to another user');
+            }
+        }
 
         const newAssignment = new ProjectAssignment({ projectid, userid, assigndate, duration, status });
         const assignment = await newAssignment.save();
