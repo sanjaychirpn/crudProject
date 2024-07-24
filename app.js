@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 
 // Enable CORS
 app.use(cors({
-  origin: 'http://localhost:3000', // Replace with your client URL
+  origin: 'http://localhost:3000','http://localhost:3001' // Replace with your client URL
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 }));
